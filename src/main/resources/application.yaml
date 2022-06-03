@@ -1,0 +1,38 @@
+server:
+  port: 9292
+
+spring:
+  application:
+    name: stc-strava
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.15.13.154:3306/strava?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+security:
+  oauth2:
+    client:
+      client-id: 63587
+      client-secret: 90d9886e663cc8ab2cc408cfae62ae72cacb5586
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+#config value
+distanceConfig: 2000
+minAvgPaceConfig: 3.30
+maxAvgPaceConfig: 15.00
+
+
+
+#http://localhost:8080/oauth2/authorization/strava
