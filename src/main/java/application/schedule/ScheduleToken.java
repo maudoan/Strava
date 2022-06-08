@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ import java.util.List;
 @Configuration
 @EnableScheduling
 public class ScheduleToken {
+
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
@@ -124,6 +126,7 @@ public class ScheduleToken {
 
     @Scheduled(cron = "0 0 0 * * *",zone = "Asia/Ho_Chi_Minh")//chạy sau mỗi 0h 0p mỗi
     public void activitySync() throws JsonProcessingException {
+
         List<Token> tokens = tokenRepository.findAll();
         for (Token token : tokens) {
             List<JsonNode> jsons;
@@ -137,6 +140,7 @@ public class ScheduleToken {
             }catch (Exception ex){
                 continue;
             }
+
             for (JsonNode node : jsons) {
                 Run run = new Run();
                 double distance = node.get("distance").asDouble();
@@ -144,7 +148,16 @@ public class ScheduleToken {
                 double avgPace =  (movingTime/60)/(distance/1000);
                 String date = node.get("start_date_local").asText();
                 String type = node.get("type").asText();
-
+                double point = 0;
+                if(avgPace>=3 && avgPace<6.5){
+                    point = (avgPace*0.2*3) + (distance/1000)*0.3 + 0.5;
+                }
+                if(avgPace>=6.5 && avgPace<9){
+                    point = (avgPace*0.2*2) + (distance/1000)*0.3 + 0.5;
+                }
+                if(avgPace>=9 && avgPace<=15){
+                    point = (avgPace*0.2*1) + (distance/1000)*0.3 + 0.5;
+                }
                 String[] splitDate = date.split("T");
                 LocalDate localDate = LocalDate.parse(splitDate[0]);
                 String dateStartVerTwo = "2022-04-22";
@@ -170,6 +183,7 @@ public class ScheduleToken {
                     run.setMovingTime(movingTime);
                     run.setPace(avgPace);
                     run.setDate(localDate);
+                    run.setTotalPoint(point);
                     List<Run> paceDB = runRepositoy.findAllByPaceAndDate(run.getPace(), run.getDate() );
                     if(paceDB.size()==0){
                         runRepositoy.save(run);

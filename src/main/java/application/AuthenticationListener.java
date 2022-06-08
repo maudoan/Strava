@@ -62,10 +62,10 @@ public class AuthenticationListener implements ApplicationListener<ContextRefres
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) throws RuntimeException {
 
-        System.out.println("START UPDATE TOKEN," + System.currentTimeMillis());
+        System.out.println("START UPDATE TOKEN:" + System.currentTimeMillis());
         List<Token> tokens = tokenRepository.findAll();
-
         userRepository.deleteAll();
+
         for (Token token : tokens) {
             JsonNode jsonNode;
             String uri = UriComponentsBuilder.newInstance().scheme("https").host("www.strava.com").path("/oauth/token")
@@ -126,27 +126,73 @@ public class AuthenticationListener implements ApplicationListener<ContextRefres
                 String date = node.get("start_date_local").asText();
                 String type = node.get("type").asText();
 
+                double point =0 ;
+                if(avgPace>=3 && avgPace<6.5){
+                    point = (avgPace*0.2*3) + (distance/1000)*0.3 + 0.5;
+                }
+                if(avgPace>=6.5 && avgPace<9){
+                    point = (avgPace*0.2*2) + (distance/1000)*0.3 + 0.5;
+                }
+                if(avgPace>=9 && avgPace<=15){
+                    point = (avgPace*0.2*1) + (distance/1000)*0.3 + 0.5;
+                }
+                System.out.println("test:"+point);
                 String[] splitDate = date.split("T");
                 LocalDate localDate = LocalDate.parse(splitDate[0]);
-                String date1 = "2021-03-28";
-                String dateStop = "2021-05-25";
-                LocalDate dateStopFormat = LocalDate.parse(dateStop);
-                LocalDate dateFormat = LocalDate.parse(date1);
+                String dateStartVerTwo = "2022-04-22";
+                LocalDate dateStartVerTwoFormat = LocalDate.parse(dateStartVerTwo);
+//                String dateStop = "2021-05-25";
+//                LocalDate dateFormat = LocalDate.parse(dateStop);
+//
+//                String dateContinue = "2021-07-04";
+//                String dateStopContinue = "2021-07-09";
+//                LocalDate dateContinueFormat = LocalDate.parse(dateContinue);
+//                LocalDate dateStopContinueFormat = LocalDate.parse(dateStopContinue);
 
-                String dateContinue = "2021-07-04";
-                String dateStopContinue = "2021-07-09";
-                LocalDate dateContinueFormat = LocalDate.parse(dateContinue);
-                LocalDate dateStopContinueFormat = LocalDate.parse(dateStopContinue);
-                if (((localDate.isAfter(dateFormat)) && (localDate.isBefore(dateStopFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))
-                        || ((localDate.isAfter(dateContinueFormat)) && (localDate.isBefore(dateStopContinueFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))) {
+//                String dateCovidContinue = "2022-04-22";
+//                LocalDate dateCovidContinueFormat = LocalDate.parse(dateCovidContinue);
+                if (((localDate.isAfter(dateStartVerTwoFormat))
+//                        && (localDate.isBefore(dateStopFormat))
+                        && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.0 ) && (type.equals("Run")))
+//                        || ((localDate.isAfter(dateContinueFormat)) && (localDate.isBefore(dateStopContinueFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))
+//                        || ((localDate.isAfter(dateCovidContinueFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))
+                ) {
                     run.setAthleteId(token.getAthleteId());
                     run.setDistance(distance);
                     run.setMovingTime(movingTime);
                     run.setPace(avgPace);
                     run.setDate(localDate);
+                    run.setTotalPoint(point);
                     List<Run> paceDB = runRepositoy.findAllByPaceAndDate(run.getPace(), run.getDate() );
                     if(paceDB.size()==0){
                         runRepositoy.save(run);
+//                Run run = new Run();
+//                double distance = node.get("distance").asDouble();
+//                long movingTime = node.get("moving_time").asLong();
+//                double avgPace =  (movingTime/60)/(distance/1000);
+//                String date = node.get("start_date_local").asText();
+//                String type = node.get("type").asText();
+//                String[] splitDate = date.split("T");
+//                LocalDate localDate = LocalDate.parse(splitDate[0]);
+//                String date1 = "2021-03-28";
+//                String dateStop = "2021-05-25";
+//                LocalDate dateStopFormat = LocalDate.parse(dateStop);
+//                LocalDate dateFormat = LocalDate.parse(date1);
+//
+//                String dateContinue = "2021-07-04";
+//                String dateStopContinue = "2021-07-09";
+//                LocalDate dateContinueFormat = LocalDate.parse(dateContinue);
+//                LocalDate dateStopContinueFormat = LocalDate.parse(dateStopContinue);
+//                if (((localDate.isAfter(dateFormat)) && (localDate.isBefore(dateStopFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))
+//                        || ((localDate.isAfter(dateContinueFormat)) && (localDate.isBefore(dateStopContinueFormat)) && (distance >= 2000) && (avgPace >= 3.30  || avgPace <= 15.00 ) && (type.equals("Run")))) {
+//                    run.setAthleteId(token.getAthleteId());
+//                    run.setDistance(distance);
+//                    run.setMovingTime(movingTime);
+//                    run.setPace(avgPace);
+//                    run.setDate(localDate);
+//                    List<Run> paceDB = runRepositoy.findAllByPaceAndDate(run.getPace(), run.getDate() );
+//                    if(paceDB.size()==0){
+//                        runRepositoy.save(run);
                     }
                 }
             }

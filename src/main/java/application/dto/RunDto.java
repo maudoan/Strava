@@ -23,6 +23,7 @@ public class RunDto {
     private double pace;
     private LocalDate date;
     private long movingTime;
+
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private User user;
@@ -82,4 +83,5 @@ public class RunDto {
     public void setUser(User user) {
         this.user = user;
     }
+
 }

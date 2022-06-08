@@ -63,6 +63,8 @@ public class RunService {
         HashMap<Long, Integer> count = new HashMap<>();
         HashMap<Long, LocalDate> localDate = new HashMap<>();
 
+
+
         for (int i = 0; i < runs.size(); i++) {
             Long athleteId = runs.get(i).getAthleteId();
             LocalDate dateInRecord = runs.get(i).getDate();
@@ -73,6 +75,7 @@ public class RunService {
                 Statistic statistic = map.get(athleteId);
                 statistic.setAthleteId(athleteId);
                 statistic.setDistance(runs.get(i).getDistance() + map.get(athleteId).getDistance());
+                statistic.setTotalPoint(runs.get(i).getTotalPoint() + map.get(athleteId).getTotalPoint());
                 LocalDate runLocalDate = runs.get(i).getDate();
                 LocalDate mapLocalDate = map.get(athleteId).getDate();
                 if ((runLocalDate.getDayOfMonth() != mapLocalDate.getDayOfMonth()) || (runLocalDate.getMonthValue() != mapLocalDate.getMonthValue())) {
@@ -80,12 +83,14 @@ public class RunService {
                 }
                 statistic.setAvgPace((runs.get(i).getPace() + map.get(athleteId).getAvgPace()));
                 map.put(athleteId, statistic);
+
                 count.compute(athleteId, (k, v) -> v + 1);
                 localDate.replace(athleteId, dateInRecord);
             } else {
                 Statistic statistic = new Statistic();
                 statistic.setAthleteId(athleteId);
                 statistic.setDistance(runs.get(i).getDistance());
+                statistic.setTotalPoint(runs.get(i).getTotalPoint());
                 statistic.setDate(runs.get(i).getDate());
                 statistic.setRuns(1);
                 statistic.setAvgPace(runs.get(i).getPace());
@@ -104,6 +109,7 @@ public class RunService {
             statistic.setId(statistic.getId());
             statistic.setAvgPace(statistic.getAvgPace()/total);
             statistics.add(statistic);
+
         }
 
         return statistics;
